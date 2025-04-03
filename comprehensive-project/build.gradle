@@ -33,6 +33,8 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb' // ✅ 몽고DB
     implementation 'org.springframework.data:spring-data-mongodb:4.1.1' // ✅ 최신 버전 추가
+
+	implementation 'org.springframework.boot:spring-boot-starter-security' // 스프링 시큐리티
 }
 
 
