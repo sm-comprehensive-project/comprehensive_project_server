@@ -18,16 +18,49 @@ public class LiveProductService {
         this.repository = repository;
     }
 
+    // ✅ 단일 조회
     public Optional<LiveProductDTO> getProductByLiveId(String liveId) {
         return repository.findByLiveId(liveId).map(this::convertToDTO);
     }
 
+    // ✅ 전체 조건 필터링
+    public List<LiveProductDTO> getFilteredLiveProducts(String platform, Boolean isLive, String search,
+            String category) {
+        List<LiveProduct> all = repository.findAll();
+
+        return all.stream()
+                .filter(p -> platform == null || p.getPlatform().equalsIgnoreCase(platform))
+                .filter(p -> isLive == null || p.isLive() == isLive)
+                .filter(p -> {
+                    if (search == null || search.isBlank())
+                        return true;
+
+                    boolean inTitle = p.getTitle() != null && p.getTitle().contains(search);
+                    boolean inProductName = p.getProducts() != null && p.getProducts().stream()
+                            .anyMatch(prod -> prod.getName() != null && prod.getName().contains(search));
+
+                    return inTitle || inProductName;
+                })
+                .filter(p -> {
+                    if (category == null || category.isBlank())
+                        return true;
+
+                    return p.getProducts() != null && p.getProducts().stream()
+                            .anyMatch(prod -> prod.getCategory() != null
+                                    && prod.getCategory().equalsIgnoreCase(category));
+                })
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ✅ 전체 목록 (필터 없음)
     public List<LiveProductDTO> getAllLiveProducts() {
         return repository.findAll().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
+    // ✅ Entity → DTO 변환
     private LiveProductDTO convertToDTO(LiveProduct entity) {
         LiveProductDTO dto = new LiveProductDTO();
         dto.setLiveId(entity.getLiveId());
@@ -38,7 +71,7 @@ public class LiveProductService {
         dto.setThumbnail(entity.getThumbnail());
         dto.setTitle(entity.getTitle());
 
-        // Seller Info
+        // 판매자 정보
         SellerInfoDTO sellerDTO = new SellerInfoDTO();
         if (entity.getSellerInfo() != null) {
             sellerDTO.setName(entity.getSellerInfo().getName());
@@ -47,7 +80,7 @@ public class LiveProductService {
         }
         dto.setSellerInfo(sellerDTO);
 
-        // Product List
+        // 상품 목록
         List<ProductDTO> productDTOs = entity.getProducts().stream().map(p -> {
             ProductDTO d = new ProductDTO();
             d.setName(p.getName());
@@ -61,7 +94,6 @@ public class LiveProductService {
         }).collect(Collectors.toList());
 
         dto.setProducts(productDTOs);
-
         return dto;
     }
 }
