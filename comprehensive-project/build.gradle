@@ -35,6 +35,9 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-security' // 스프링 시큐리티
 	implementation 'org.springframework.security:spring-security-config:6.0.0'
+
+	// 엘라스틱 서치 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 }
 
 
