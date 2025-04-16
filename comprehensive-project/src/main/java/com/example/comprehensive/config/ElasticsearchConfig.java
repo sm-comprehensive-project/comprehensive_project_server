@@ -1,13 +1,16 @@
 package com.example.comprehensive.config;
 
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.elasticsearch.client.ClientConfiguration;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration;
+
 @Configuration
-public class ElasticsearchConfig extends AbstractElasticsearchConfiguration {
+public class ElasticsearchConfig extends ElasticsearchConfiguration {
+    
     @Override
-    public RestHighLevelClient elasticsearchClient() {
-        final ClientConfiguration clientConfiguration = 
-            ClientConfiguration.builder()
-                .connectedTo("localhost:9200")
-                .build();
-        return RestClients.create(clientConfiguration).rest();
+    public ClientConfiguration clientConfiguration() {
+        return ClientConfiguration.builder()
+            .connectedTo("localhost:9200")
+            .build();
     }
 }
