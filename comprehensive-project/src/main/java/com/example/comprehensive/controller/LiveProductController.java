@@ -1,6 +1,7 @@
 package com.example.comprehensive.controller;
 
 import com.example.comprehensive.dto.LiveProductDTO;
+import com.example.comprehensive.repository.LiveProductProjection;
 import com.example.comprehensive.service.LiveProductService;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,5 +60,12 @@ public class LiveProductController {
     @GetMapping("/by-platform/{platform}")
     public List<LiveProductDTO> getByPlatform(@PathVariable String platform) {
         return service.getFilteredLiveProducts(platform, null, null, null);
+    }
+
+    // 방송 요약 목록 조회 API
+    // http://localhost:8080/damoa/live/summary
+    @GetMapping("/summary")
+    public List<LiveProductProjection> getLiveSummaryList() {
+        return service.getAllLiveProductSummary();
     }
 }

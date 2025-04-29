@@ -3,6 +3,7 @@ package com.example.comprehensive.service;
 import com.example.comprehensive.dto.*;
 import com.example.comprehensive.entity.*;
 import com.example.comprehensive.repository.LiveProductRepository;
+import com.example.comprehensive.repository.LiveProductProjection;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -55,6 +56,11 @@ public class LiveProductService {
         return repository.findAll().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+    // ✅ 전체 방송 요약 목록 조회 (Projection)
+    public List<LiveProductProjection> getAllLiveProductSummary() {
+        return repository.findAllBy();
     }
 
     // Entity → DTO 변환
