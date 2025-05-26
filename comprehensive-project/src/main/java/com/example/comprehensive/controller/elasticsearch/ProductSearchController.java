@@ -12,6 +12,7 @@ import com.example.comprehensive.service.elasticsearch.ProductSearchService;
 
 import java.util.*;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/search")
 public class ProductSearchController {

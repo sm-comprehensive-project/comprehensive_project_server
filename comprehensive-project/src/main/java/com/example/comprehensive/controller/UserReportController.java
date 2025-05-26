@@ -4,6 +4,7 @@ import com.example.comprehensive.entity.Report;
 import com.example.comprehensive.service.ReportService;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/user")
 public class UserReportController {

@@ -1,19 +1,16 @@
 package com.example.comprehensive.controller;
 
-import com.example.comprehensive.dto.LiveProductDTO;
-import com.example.comprehensive.dto.ScoredLiveProductDTO;
 import com.example.comprehensive.dto.UserDTO;
 import com.example.comprehensive.entity.User;
 import com.example.comprehensive.service.UserService;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
@@ -44,8 +41,14 @@ public class UserController {
             UserDTO dto = new UserDTO(service.register(user));
             return ResponseEntity.ok().body(Map.of("success", true, "message", "회원가입 성공", "user", dto));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+            if ("이미 존재하는 이메일입니다.".equals(e.getMessage())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("success", false, "message", e.getMessage()));
+            }
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", e.getMessage()));
         }
+
     }
 
     /**
@@ -203,68 +206,5 @@ public class UserController {
     public ResponseEntity<?> addSearch(@RequestBody Map<String, String> request) {
         service.addSearchHistory(request.get("email"), request.get("keyword"));
         return ResponseEntity.ok().body(Map.of("success", true, "message", "검색 기록 추가됨"));
-    }
-
-    /*
-     * 사용자의 전체 추천 방송을 점수와 함께 가져옵니다.
-     * 
-     * [GET] /api/user/recommendations?email={email}
-     */
-    @GetMapping("/recommendations")
-    public ResponseEntity<?> getFullRecommendations(@RequestParam String email) {
-        try {
-            List<ScoredLiveProductDTO> results = service.getRecommendedLiveProducts(email);
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "recommendations", results));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                    "success", false,
-                    "message", e.getMessage()));
-        }
-    }
-
-    /*
-     * 추천 점수가 가장 높은 방송 1개를 가져옵니다.
-     * [GET] /api/user/recommendations/top?email={email}
-     */
-    @GetMapping("/recommendations/top")
-    public ResponseEntity<?> getTopRecommendation(@RequestParam String email) {
-        try {
-            Optional<ScoredLiveProductDTO> result = service.getTopRecommendedLiveProduct(email);
-
-            if (result.isPresent()) {
-                return ResponseEntity.ok(Map.of(
-                        "success", true,
-                        "recommendation", result.get()));
-            } else {
-                return ResponseEntity.ok(Map.of(
-                        "success", true,
-                        "message", "추천 결과가 없습니다."));
-            }
-
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                    "success", false,
-                    "message", e.getMessage()));
-        }
-    }
-
-    /*
-     * 사용자가 찜한 방송 전체를 가져옵니다.
-     * [GET] /api/user/likes?email={email}
-     */
-    @GetMapping("/likes")
-    public ResponseEntity<?> getLikedLives(@RequestParam String email) {
-        try {
-            List<LiveProductDTO> result = service.getLikedLiveProducts(email);
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "liked", result));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                    "success", false,
-                    "message", e.getMessage()));
-        }
     }
 }
