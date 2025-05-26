@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-@Document(indexName = "test.naver_product")
+@Document(indexName = "damoa.naver_product")
 public class NaverProductDocument {
     @Id
     private String id;

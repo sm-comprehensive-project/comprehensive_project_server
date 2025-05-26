@@ -1,21 +1,27 @@
 package com.example.comprehensive.service;
 
+import com.example.comprehensive.dto.LiveProductDTO;
+import com.example.comprehensive.dto.ScoredLiveProductDTO;
 import com.example.comprehensive.entity.User;
 import com.example.comprehensive.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final LiveProductService liveProductService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            LiveProductService liveProductService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.liveProductService = liveProductService;
     }
 
     public User register(User user) {
@@ -108,4 +114,47 @@ public class UserService {
         user.getSearchHistory().add(keyword);
         userRepository.save(user);
     }
+
+    public List<ScoredLiveProductDTO> getRecommendedLiveProducts(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + email));
+
+        List<User.Recommendation> recommendations = user.getRecommendations();
+
+        return recommendations.stream()
+                .map(rec -> {
+                    Optional<LiveProductDTO> dto = liveProductService.getProductByObjectId(rec.getLiveId());
+
+                    if (dto.isPresent()) {
+                    } else {
+                    }
+
+                    return dto.map(product -> new ScoredLiveProductDTO(product, rec.getScore())).orElse(null);
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<ScoredLiveProductDTO> getTopRecommendedLiveProduct(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + email));
+
+        return user.getRecommendations().stream()
+                .max(Comparator.comparingDouble(User.Recommendation::getScore)) // 최고 점수 추천 선택
+                .map(topRec -> {
+                    Optional<LiveProductDTO> dto = liveProductService.getProductByObjectId(topRec.getLiveId());
+                    return dto.map(product -> new ScoredLiveProductDTO(product, topRec.getScore()))
+                            .orElse(null);
+                });
+    }
+
+    public List<LiveProductDTO> getLikedLiveProducts(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + email));
+
+        List<String> likedIds = user.getLikedLiveIds();
+
+        return liveProductService.getProductsByObjectIds(likedIds);
+    }
+
 }

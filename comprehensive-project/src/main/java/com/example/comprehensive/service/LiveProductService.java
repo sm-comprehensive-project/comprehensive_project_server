@@ -124,4 +124,15 @@ public class LiveProductService {
         live.getProducts().removeIf(p -> p.getName().equals(productName));
         return convertToDTO(repository.save(live));
     }
+
+    public Optional<LiveProductDTO> getProductByObjectId(String objectId) {
+        return repository.findById(objectId).map(this::convertToDTO);
+    }
+
+    public List<LiveProductDTO> getProductsByObjectIds(List<String> objectIds) {
+        return repository.findAllById(objectIds).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
 }
